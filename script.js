@@ -1,10 +1,12 @@
 let currentStep = 1;
 
-// ── Open / Close Popup ──
+/* ── Open / Close ── */
 
 function openOrderPopup() {
   resetForm();
   document.getElementById('popupOverlay').classList.add('open');
+  // Focus the first input after transition
+  setTimeout(() => document.getElementById('phone').focus(), 350);
 }
 
 function closePopup() {
@@ -12,12 +14,10 @@ function closePopup() {
 }
 
 function closeOrderPopup(e) {
-  if (e.target === e.currentTarget) {
-    closePopup();
-  }
+  if (e.target === e.currentTarget) closePopup();
 }
 
-// ── Phone Formatting ──
+/* ── Phone Formatting ── */
 
 function formatPhone(input) {
   let digits = input.value.replace(/\D/g, '');
@@ -32,18 +32,18 @@ function formatPhone(input) {
   input.value = formatted;
 }
 
-// ── Validation ──
+/* ── Validation ── */
 
 function clearErrors() {
   document.querySelectorAll('.field-error').forEach(el => el.textContent = '');
   document.querySelectorAll('input.invalid').forEach(el => el.classList.remove('invalid'));
 }
 
-function showError(fieldId, message) {
+function showError(fieldId, msg) {
   const input = document.getElementById(fieldId);
   const error = document.getElementById(fieldId + 'Error');
   if (input) input.classList.add('invalid');
-  if (error) error.textContent = message;
+  if (error) error.textContent = msg;
 }
 
 function validateStep1() {
@@ -60,33 +60,25 @@ function validateStep2() {
   clearErrors();
   let valid = true;
 
-  const fullName = document.getElementById('fullName').value.trim();
-  if (!fullName) {
+  if (!document.getElementById('fullName').value.trim()) {
     showError('fullName', 'Full name is required.');
     valid = false;
   }
-
-  const street = document.getElementById('street').value.trim();
-  if (!street) {
+  if (!document.getElementById('street').value.trim()) {
     showError('street', 'Street address is required.');
     valid = false;
   }
-
-  const city = document.getElementById('city').value.trim();
-  if (!city) {
+  if (!document.getElementById('city').value.trim()) {
     showError('city', 'City is required.');
     valid = false;
   }
-
-  const zip = document.getElementById('zip').value.trim();
-  if (zip.length !== 5) {
+  if (document.getElementById('zip').value.trim().length !== 5) {
     showError('zip', 'Enter a 5-digit zip code.');
     valid = false;
   }
 
   const email = document.getElementById('email').value.trim();
-  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailPattern.test(email)) {
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     showError('email', 'Please enter a valid email address.');
     valid = false;
   }
@@ -96,18 +88,32 @@ function validateStep2() {
 
 function validateStep3() {
   clearErrors();
-  const selected = document.querySelector('input[name="orderMethod"]:checked');
-  if (!selected) {
+  if (!document.querySelector('input[name="orderMethod"]:checked')) {
     document.getElementById('methodError').textContent = 'Please select pickup or delivery.';
     return false;
   }
   return true;
 }
 
-// ── Step Navigation ──
+/* ── Stepper ── */
+
+function updateStepper(step) {
+  // Fill bar: step 1 = 0%, step 2 = 50%, step 3 = 100%
+  const pct = ((step - 1) / 2) * 100;
+  document.getElementById('stepperFill').style.width = pct + '%';
+
+  // Labels
+  document.querySelectorAll('.stepper-label').forEach(el => {
+    const s = parseInt(el.dataset.step);
+    el.classList.remove('active', 'done');
+    if (s === step) el.classList.add('active');
+    if (s < step) el.classList.add('done');
+  });
+}
+
+/* ── Step Navigation ── */
 
 function goToStep(step) {
-  // Validate current step before advancing
   if (step > currentStep) {
     if (currentStep === 1 && !validateStep1()) return;
     if (currentStep === 2 && !validateStep2()) return;
@@ -116,24 +122,18 @@ function goToStep(step) {
   clearErrors();
   currentStep = step;
 
-  // Toggle active step panel
+  // Swap visible panels
   document.querySelectorAll('.popup-step').forEach(el => el.classList.remove('active'));
   document.getElementById('step' + step).classList.add('active');
 
-  // Update progress indicators
-  document.querySelectorAll('.progress-step').forEach(el => {
-    const s = parseInt(el.dataset.step);
-    el.classList.remove('active', 'done');
-    if (s === step) el.classList.add('active');
-    if (s < step) el.classList.add('done');
-  });
+  updateStepper(step);
 
-  // Update progress lines
-  document.getElementById('line1').classList.toggle('filled', step >= 2);
-  document.getElementById('line2').classList.toggle('filled', step >= 3);
+  // Auto-focus first input on new step
+  const firstInput = document.querySelector('#step' + step + ' input:not([type="radio"])');
+  if (firstInput) setTimeout(() => firstInput.focus(), 100);
 }
 
-// ── Method Selection ──
+/* ── Method Selection ── */
 
 function selectMethod(radio) {
   document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
@@ -141,7 +141,7 @@ function selectMethod(radio) {
   document.getElementById('methodError').textContent = '';
 }
 
-// ── Submit ──
+/* ── Submit ── */
 
 function submitOrder() {
   if (!validateStep3()) return;
@@ -162,26 +162,18 @@ function submitOrder() {
   closePopup();
 }
 
-// ── Reset ──
+/* ── Reset ── */
 
 function resetForm() {
   currentStep = 1;
+
   document.querySelectorAll('.popup-step').forEach(el => el.classList.remove('active'));
   document.getElementById('step1').classList.add('active');
+  updateStepper(1);
 
-  document.querySelectorAll('.progress-step').forEach(el => {
-    el.classList.remove('active', 'done');
+  ['phone', 'fullName', 'street', 'city', 'zip', 'email'].forEach(id => {
+    document.getElementById(id).value = '';
   });
-  document.querySelector('.progress-step[data-step="1"]').classList.add('active');
-  document.getElementById('line1').classList.remove('filled');
-  document.getElementById('line2').classList.remove('filled');
-
-  document.getElementById('phone').value = '';
-  document.getElementById('fullName').value = '';
-  document.getElementById('street').value = '';
-  document.getElementById('city').value = '';
-  document.getElementById('zip').value = '';
-  document.getElementById('email').value = '';
 
   document.querySelectorAll('input[name="orderMethod"]').forEach(r => r.checked = false);
   document.querySelectorAll('.method-card').forEach(c => c.classList.remove('selected'));
@@ -189,7 +181,8 @@ function resetForm() {
   clearErrors();
 }
 
-// Close on Escape key
+/* ── Keyboard ── */
+
 document.addEventListener('keydown', function (e) {
   if (e.key === 'Escape') closePopup();
 });
