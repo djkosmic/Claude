@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Online Ordering</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <div class="menu-page">
+    <h1>Our Menu</h1>
+    <p class="subtitle">Fresh food, made to order</p>
+
+    <div class="menu-grid">
+      <div class="menu-item">
+        <div class="menu-item-img">&#127828;</div>
+        <h3>Classic Burger</h3>
+        <p class="price">$9.99</p>
+        <button class="btn-add" onclick="openOrderPopup()">Order Now</button>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-img">&#127829;</div>
+        <h3>Pepperoni Pizza</h3>
+        <p class="price">$12.99</p>
+        <button class="btn-add" onclick="openOrderPopup()">Order Now</button>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-img">&#127843;</div>
+        <h3>Fish Tacos</h3>
+        <p class="price">$10.99</p>
+        <button class="btn-add" onclick="openOrderPopup()">Order Now</button>
+      </div>
+      <div class="menu-item">
+        <div class="menu-item-img">&#127839;</div>
+        <h3>Chicken Wings</h3>
+        <p class="price">$8.99</p>
+        <button class="btn-add" onclick="openOrderPopup()">Order Now</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Overlay -->
+  <div class="popup-overlay" id="popupOverlay" onclick="closeOrderPopup(event)">
+
+    <!-- Popup Container -->
+    <div class="popup" id="orderPopup">
+      <button class="popup-close" onclick="closePopup()">&times;</button>
+
+      <!-- Progress Indicator -->
+      <div class="progress-bar">
+        <div class="progress-step active" data-step="1">
+          <div class="step-circle">1</div>
+          <span class="step-label">Phone</span>
+        </div>
+        <div class="progress-line" id="line1"></div>
+        <div class="progress-step" data-step="2">
+          <div class="step-circle">2</div>
+          <span class="step-label">Details</span>
+        </div>
+        <div class="progress-line" id="line2"></div>
+        <div class="progress-step" data-step="3">
+          <div class="step-circle">3</div>
+          <span class="step-label">Method</span>
+        </div>
+      </div>
+
+      <!-- Step 1: Phone Number -->
+      <div class="popup-step active" id="step1">
+        <h2>Let's start your order</h2>
+        <p class="step-desc">Enter your phone number to get started.</p>
+        <div class="form-group">
+          <label for="phone">Phone Number</label>
+          <input
+            type="tel"
+            id="phone"
+            placeholder="(555) 123-4567"
+            maxlength="14"
+            oninput="formatPhone(this)"
+          >
+          <span class="field-error" id="phoneError"></span>
+        </div>
+        <button class="btn-continue" onclick="goToStep(2)">Continue</button>
+      </div>
+
+      <!-- Step 2: Contact & Address Info -->
+      <div class="popup-step" id="step2">
+        <h2>Your Information</h2>
+        <p class="step-desc">We need a few more details.</p>
+
+        <div class="form-group">
+          <label for="fullName">Full Name</label>
+          <input type="text" id="fullName" placeholder="John Doe">
+          <span class="field-error" id="fullNameError"></span>
+        </div>
+
+        <div class="form-group">
+          <label for="street">Street Address</label>
+          <input type="text" id="street" placeholder="123 Main St">
+          <span class="field-error" id="streetError"></span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="city">City / Town</label>
+            <input type="text" id="city" placeholder="Springfield">
+            <span class="field-error" id="cityError"></span>
+          </div>
+          <div class="form-group">
+            <label for="zip">Zip Code</label>
+            <input type="text" id="zip" placeholder="12345" maxlength="5" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+            <span class="field-error" id="zipError"></span>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input type="email" id="email" placeholder="john@example.com">
+          <span class="field-error" id="emailError"></span>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn-back" onclick="goToStep(1)">Back</button>
+          <button class="btn-continue" onclick="goToStep(3)">Continue</button>
+        </div>
+      </div>
+
+      <!-- Step 3: Pickup or Delivery -->
+      <div class="popup-step" id="step3">
+        <h2>How would you like your order?</h2>
+        <p class="step-desc">Select pickup or delivery.</p>
+
+        <div class="method-options">
+          <label class="method-card" id="pickupCard">
+            <input type="radio" name="orderMethod" value="pickup" onchange="selectMethod(this)">
+            <div class="method-icon">&#128722;</div>
+            <div class="method-info">
+              <strong>Pickup</strong>
+              <span>Come grab it at the store</span>
+            </div>
+            <div class="method-check">&#10003;</div>
+          </label>
+
+          <label class="method-card" id="deliveryCard">
+            <input type="radio" name="orderMethod" value="delivery" onchange="selectMethod(this)">
+            <div class="method-icon">&#128666;</div>
+            <div class="method-info">
+              <strong>Delivery</strong>
+              <span>We'll bring it to your door</span>
+            </div>
+            <div class="method-check">&#10003;</div>
+          </label>
+        </div>
+        <span class="field-error" id="methodError"></span>
+
+        <div class="btn-row">
+          <button class="btn-back" onclick="goToStep(2)">Back</button>
+          <button class="btn-submit" onclick="submitOrder()">Place Order</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
